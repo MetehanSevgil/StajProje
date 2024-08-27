@@ -200,26 +200,41 @@
             document.getElementById('addLocationButton').disabled = false;
         };
 
-        function addPredefinedStudentLocations() {
-            // Öğrenci konumlarını ekle
-            predefinedStudentLocations.forEach((loc, index) => {
+        // Nominatim API anahtarı gerekmiyor, ama istek limitlerine dikkat et
+        const nominatimUrl = 'https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&addressdetails=1';
+
+        async function getAddress(lat, lon) {
+            const url = nominatimUrl.replace('{lat}', lat).replace('{lon}', lon);
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.display_name; // Adres bilgisi
+            } catch (error) {
+                console.error('Adres alınamadı:', error);
+                return 'Adres bulunamadı';
+            }
+        }
+
+        async function addPredefinedStudentLocations() {
+            for (const [index, loc] of predefinedStudentLocations.entries()) {
                 const studentNumber = index + 1;
+                const address = await getAddress(loc.lat, loc.lng);
+
                 const marker = L.marker([loc.lat, loc.lng])
                     .addTo(map)
-                    .bindPopup(`Öğrenci ${studentNumber}`)
+                    .bindPopup(`Öğrenci: ${address}`)
                     .openPopup();
 
-                const locationObject = { lat: loc.lat, lng: loc.lng, marker };
+                const locationObject = { lat: loc.lat, lng: loc.lng, marker, address };
                 studentLocations.push(locationObject);
 
                 const studentList = document.getElementById('studentList');
                 const listItem = document.createElement('li');
-                listItem.textContent = `Öğrenci ${studentNumber}`;
-                listItem.setAttribute('data-index', studentLocations.length - 1); // Konumun dizinini kaydet
-                listItem.addEventListener('click', () => highlightLocation(listItem, locationObject)); // Listeden tıklama ile seçilebilir
+                listItem.textContent = `Öğrenci: ${address}`;
+                listItem.setAttribute('data-index', studentLocations.length - 1);
+                listItem.addEventListener('click', () => highlightLocation(listItem, locationObject));
                 studentList.appendChild(listItem);
-            });
-
+            }
             document.getElementById('deleteLocationButton').disabled = false;
             document.getElementById('calculateRouteButton').disabled = false;
         }
