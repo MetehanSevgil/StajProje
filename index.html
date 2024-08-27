@@ -137,6 +137,28 @@
             }
         });
 
+
+        const startLat = 41.058944608514906;
+        const startLng = 28.84145666132722;
+
+        // Sayfa yüklendiğinde ev ve öğrenci konumlarını ekleyelim
+         window.onload = function() {
+            // Ev konumunu ekleyelim
+            startLocation = {
+                lat: startLat,
+                lng: startLng,
+                marker: L.marker([startLat, startLng], { icon: startIcon }).addTo(map).bindPopup("Ev").openPopup()
+            };
+
+            // Öğrenci konumlarını ekleyelim
+            addPredefinedStudentLocations();
+
+            // Başlangıç ve bitiş butonlarını devre dışı bırak
+            document.getElementById('setStartButton').disabled = true;
+            document.getElementById('setEndButton').disabled = false;
+            document.getElementById('addLocationButton').disabled = false;
+        };
+
         function addPredefinedStudentLocations() {
             // Öğrenci konumlarını ekle
             predefinedStudentLocations.forEach((loc, index) => {
