@@ -1,0 +1,9 @@
+C:\Users\emirc\source\repos\loginApp\loginApp\obj\Debug\loginApp.njsproj.AssemblyReference.cache
+C:\Users\emirc\source\repos\loginApp\loginApp\obj\Debug\loginApp.njsproj.CoreCompileInputs.cache
+C:\Users\emirc\source\repos\loginApp\loginApp\bin\Microsoft.NodejsTools.WebRole.dll
+C:\Users\emirc\OneDrive\Desktop\loginApp\loginApp\obj\Debug\loginApp.njsproj.AssemblyReference.cache
+C:\Users\emirc\OneDrive\Desktop\loginApp\loginApp\obj\Debug\loginApp.njsproj.CoreCompileInputs.cache
+C:\Users\emirc\OneDrive\Desktop\loginApp\loginApp\bin\Microsoft.NodejsTools.WebRole.dll
+C:\Users\emirc\OneDrive\Desktop\haritav3\StajProje\loginApp\loginApp\obj\Debug\loginApp.njsproj.AssemblyReference.cache
+C:\Users\emirc\OneDrive\Desktop\haritav3\StajProje\loginApp\loginApp\obj\Debug\loginApp.njsproj.CoreCompileInputs.cache
+C:\Users\emirc\OneDrive\Desktop\haritav3\StajProje\loginApp\loginApp\bin\Microsoft.NodejsTools.WebRole.dll
