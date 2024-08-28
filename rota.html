@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seçim</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Rota Seçimi</h1>
+        <button id="dayRoute">Gündüz Rotası</button>
+        <button id="nightRoute">Gece Rotası</button>
+    </div>
+
+    <script>
+        document.getElementById('dayRoute').addEventListener('click', function () {
+            window.location.href = 'harita.html';
+        });
+
+        document.getElementById('nightRoute').addEventListener('click', function () {
+            window.location.href = 'harita.html';
+        });     
+
+    </script>
+</body>
+</html>

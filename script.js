@@ -1,37 +1,28 @@
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+document.addEventListener('DOMContentLoaded', function () {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
 
-    const response = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+    loginForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Formun varsayılan submit davranışını engelle
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Kullanıcı adı ve şifreyi kontrol et
+        if (username === 'deneme@gmail.com' && password === '123') {
+            // Başarılı girişte yönlendir
+            window.location.href = 'rota.html';
+        } else {
+            alert('Kullanıcı adı veya şifre yanlış.');
+        }
     });
 
-    if (response.ok) {
-        const data = await response.json();
-        alert('Login Successful!');
-        console.log('JWT Token:', data.token);
-    } else {
-        alert('Login Failed!');
-    }
-});
-
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('regUsername').value;
-    const password = document.getElementById('regPassword').value;
-
-    const response = await fetch('http://localhost:5500/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+    registerForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Formun varsayılan submit davranışını engelle
+        
+        // Kayıt işlemleri buraya eklenebilir
+        alert('Kayıt işlemi şu anda desteklenmiyor.');
     });
-
-    if (response.ok) {
-        alert('Registration Successful!');
-    } else {
-        alert('Registration Failed!');
-    }
 });
+
+
