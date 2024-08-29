@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Servis Şoförü Uygulaması</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="stylemap.css"/>
     <style>
         body, html {
             height: 100%;
@@ -34,16 +35,62 @@
             background-color: white; /* Arka plan rengini beyaz yap */
             border-left: 1px solid #ddd; /* Sol kenar için hafif bir sınır */
         }
-
-        #directions h3 {
-            margin-top: 0; /* Başlık üstündeki boşluğu kaldır */
-            font-size: 24px; /* Başlık boyutunu büyüt */
-            font-weight: bold; /* Başlık metnini kalın yap */
-        }
-
+        
         #locationList {
             clear: both; /* Harita ve yol tarifi alanını temizle */
             padding: 10px;
+        }
+        #directions h3 {
+            margin-top: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .instruction-icon {
+            width: 24px;  /* İkon genişliği */
+            height: 24px; /* İkon yüksekliği */
+        }
+
+        #directions ol {
+            padding-left: 20px;
+            list-style-type: none; /* Numaralandırmayı gizle */
+            counter-reset: step-counter;
+        }
+
+        #directions ol li {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-left: 5px solid #007bff;
+            border-radius: 5px;
+            position: relative;
+            font-size: 16px;
+            color: #555;
+            counter-increment: step-counter;
+        }
+
+        #directions ol li::before {
+            content: counter(step-counter);
+            position: absolute;
+            top: 50%;
+            left: -30px;
+            transform: translateY(-50%);
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+            background-color: #fff;
+            border: 2px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #directions ol li .instruction-icon {
+            margin-right: 10px;
         }
 
     </style>
@@ -279,7 +326,8 @@
                 const instructions = data.paths[0].instructions;
                 let directionsHtml = '<h3>Yol Tarifi:</h3><ol>';
                 instructions.forEach(instr => {
-                    directionsHtml += `<li>${instr.text}</li>`;
+                    const iconHtml = `<img src="turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
+                    directionsHtml += `<li>${iconHtml}${instr.text}</li>`;
                 });
                 directionsHtml += '</ol>';
                 document.getElementById('directions').innerHTML = directionsHtml;
