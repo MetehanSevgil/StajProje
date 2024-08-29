@@ -126,7 +126,7 @@
 
             if (selectionMode === "end") {
                 if (endLocation) {
-                    map.removeLayer(endLocation.marker);  // Eski işaretçiyi kaldır
+                    map.removeLayer(endLocation.marker);  // Eski bitiş konumunu değiştirir
                 }
 
                 // Yeni bitiş konumu
@@ -224,10 +224,6 @@
             document.getElementById('calculateRouteButton').disabled = false;
         }
 
-        function findLocationIndex(lat, lng) {
-            return studentLocations.findIndex(loc => loc.lat === lat && loc.lng === lng);
-        }
-
         function updateStudentList() {
             const studentList = document.getElementById('studentList');
             studentList.innerHTML = ''; // Listeyi temizle
@@ -245,10 +241,10 @@
             map.setView([locationObject.lat, locationObject.lng], 14);
             locationObject.marker.openPopup();
         }
-
+        
         async function calculateNextDestination() {
-            if (!startLocation || studentLocations.length === 0) {
-                return; // Başlangıç noktasını ve öğrenci konumlarını belirlemeden rota hesaplanamaz
+            if (!startLocation || studentLocations.length === 0 || !endLocation) {
+                return; // Başlangıç noktasını, öğrenci konumlarını ve bitiş noktasını belirlemeden rota hesaplanamaz
             }
 
             // Öğrenci konumlarını başlangıç noktasına olan uzaklığa göre sıralama
@@ -258,9 +254,10 @@
                 return distanceA - distanceB;
             });
 
-            // En yakın konumu seçme
+            // En yakın öğrenci konumunu seçme
             const nextDestination = studentLocations.shift(); // En yakın konumu çıkar
 
+            // Okulu listeye ekleme
             studentLocations.push(endLocation);
 
             // Rotayı oluşturma
