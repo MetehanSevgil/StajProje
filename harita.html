@@ -6,7 +6,6 @@
     <title>Servis Şoförü Uygulaması</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="styles2.css">
-    <script src="popup.js"></script>
 </head>
 <body>
     <body>
@@ -17,29 +16,18 @@
                     <button id= "calculateback" type="button" class="toggle-btn2" disabled>Dönüş Rotası</button>
                     <button id= "relaxbutton" type="button" class="toggle-btn2" disabled>Serbest Rota</button>
                     <button id= "setEndButton" type="button" class="toggle-btn2" disabled>Bitiş Noktası Seç</button>
-                    <button id= "calculateRouteButton" type="button" class="toggle-btn2" disabled>Yolculuğu Başlat</button>
+                    <button id= "calculateRouteButton" type="button" class="toggle-btn2" disabled>Gidiş Yolculuğu Göster</button>
+                    <button id= "calculateRouteButtonBack" type="button" class="toggle-btn2" disabled>Dönüş Yolculuğu Göster</button>
                     <button id= "addStudentButton" type="button" class="toggle-btn2" >Öğrenci Ekle</button>
                 </div>
             </div>
-        </div>
-    
-        <div id="popup" class="popup">
-            <div class="popup-content">
-                <span id="closePopup" class="close">&times;</span>
-                <h2>Rota Kaydetme Seçenekleri</h2>
-                <button class="option">Seçenek 1</button>
-                <button class="option">Seçenek 2</button>
-                <button class="option">Seçenek 3</button>
-            </div>
-        </div>
-    
+        </div>    
         <div class="container">
             <div id="map"></div>
             <div id="directions">
                 <h3>Yol Tarifi</h3>
             </div>
-        </div>
-    
+        </div>  
         <div id="locationList">
             <h3>Eklenen Konumlar</h3>
             <ul id="studentList"></ul>
@@ -98,8 +86,9 @@
             alert('Lütfen bitiş noktasını seçin.');
         });
 
-        document.getElementById('calculateRouteButton').textContent = 'Yolculuğu başlat';
-        document.getElementById('calculateRouteButton').addEventListener('click', calculateNextDestination);
+        document.getElementById('calculateRouteButton').addEventListener('click', showAllRotateGo);
+
+        document.getElementById('calculateRouteButtonBack').addEventListener('click', showAllRotateBack);
 
         document.getElementById('calculatego').addEventListener('click', calculateNextDestination);
 
@@ -206,6 +195,7 @@
                 studentList.appendChild(listItem);
             }
             document.getElementById('calculateRouteButton').disabled = false;
+            document.getElementById('calculateRouteButtonBack').disabled = false;
             document.getElementById('calculatego').disabled = false;
             document.getElementById('calculateback').disabled = false;
         }
@@ -216,6 +206,123 @@
             locationObject.marker.openPopup();
         }
                
+        async function showAllRotateGo() {
+            if (!startLocation || studentLocations.length === 0 || !endLocation) {
+                alert("Lütfen okul noktasını belirleyin !!!");
+                return;
+            }
+
+            // Yolculuğu başlat  butonu pasif olsun
+            document.getElementById('calculateRouteButton').disabled = true;
+
+            let bestRoute = null;
+            let shortestDistance = Infinity;
+
+            // Brut force yöntemi ile tüm permütasyonları elde edelim
+            const allPermutations = getPermutations(studentLocations);
+
+            // Tüm rotaları değerlendirelim
+            allPermutations.forEach(permutation => {
+                let totalDistance = 0;
+                let currentLocation = startLocation;
+
+                // Her permütasyon için toplam mesafeyi hesapla
+                permutation.forEach(student => {
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, student.lat, student.lng);
+                    currentLocation = student;
+                });
+
+                // Bitiş noktasına (okula) olan mesafeyi ekle
+                totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, endLocation.lat, endLocation.lng);
+
+                // En kısa mesafeli rotayı güncelle
+                if (totalDistance < shortestDistance) {
+                    shortestDistance = totalDistance;
+                    bestRoute = permutation;
+                }
+            });
+
+            // En kısa rotayı hesapla ve çizelim
+            let allLocations = [startLocation, ...bestRoute, endLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
+            await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+        }
+
+        // Dönüş yolculuğu fonksiyonu
+        async function showAllRotateBack() {
+            if (!startLocation || studentLocations.length === 0 || !endLocation) {
+                alert("Lütfen başlangıç noktası olan okulu seçiniz !!!")
+                return;
+            }
+
+            // Yolculuğu başlat  butonu pasif olsun
+            document.getElementById('calculateRouteButton').disabled = true;
+
+            let bestRoute = null;
+            let shortestDistance = Infinity;
+
+            // Brut force yöntemi ile tüm permütasyonları elde edelim
+            const allPermutations = getPermutations(studentLocations);
+
+            // Tüm rotaları değerlendirelim
+            allPermutations.forEach(permutation => {
+                let totalDistance = 0;
+                let currentLocation = endLocation;
+
+                // Her permütasyon için toplam mesafeyi hesapla
+                permutation.forEach(student => {
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, student.lat, student.lng);
+                    currentLocation = student;
+                });
+
+                // Bitiş noktasına (eve) olan mesafeyi ekle
+                totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, startLocation.lat, startLocation.lng);
+
+                // En kısa mesafeli rotayı güncelle
+                if (totalDistance < shortestDistance) {
+                    shortestDistance = totalDistance;
+                    bestRoute = permutation;
+                }
+            });
+
+            // En kısa rotayı hesapla ve çizelim
+            let allLocations = [endLocation, ...bestRoute, startLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
+            await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+        }
+
+        async function calculateRouteAll(locations) {
+            const points = locations.map(loc => `${loc.lat},${loc.lng}`).join('&point=');
+            const url = `https://graphhopper.com/api/1/route?point=${points}&vehicle=car&locale=tr&points_encoded=false&key=${apiKey}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const route = data.paths[0].points.coordinates;
+
+                const coordinates = route.map(point => [point[1], point[0]]);
+                if (routePolyline) {
+                    map.removeLayer(routePolyline); // Eski rotayı kaldır
+                }
+                routePolyline = L.polyline(coordinates, { color: 'red' }).addTo(map);
+
+                // Turn-by-turn directions
+                const instructions = data.paths[0].instructions;
+                let directionsHtml = '<h3>Yol Tarifi:</h3><ol>';
+                instructions.forEach(instr => {
+                    const iconHtml = `<img src="turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
+                    directionsHtml += `<li>${iconHtml}${instr.text}</li>`;
+                });
+                directionsHtml += '</ol>';
+                document.getElementById('directions').innerHTML = directionsHtml;
+
+                // Harita güncelleme
+                const lastLocation = locations[locations.length - 1];
+                map.setView([lastLocation.lat, lastLocation.lng], 14);
+
+            } catch (error) {
+                console.error('Rota hesaplanamadı:', error);
+            }
+        }
+
         async function calculateNextDestination() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
                 alert("Lütfen okul noktasını belirleyin !!!");
@@ -331,26 +438,6 @@
             await calculateRoute(currentLocation, startLocation);
         }
 
-        // Permütasyonları hesaplayan fonksiyon
-        function getPermutations(array) {
-            let results = [];
-
-            function permute(arr, memo = []) {
-                let cur;
-                for (let i = 0; i < arr.length; i++) {
-                    cur = arr.splice(i, 1);
-                    if (arr.length === 0) {
-                        results.push(memo.concat(cur));
-                    }
-                    permute(arr.slice(), memo.concat(cur));
-                    arr.splice(i, 0, cur[0]);
-                }
-                return results;
-            }
-
-            return permute(array);
-        }
-
         // Bekleme fonksiyonu
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
@@ -370,7 +457,7 @@
                 if (routePolyline) {
                     map.removeLayer(routePolyline); // Eski rotayı kaldır
                 }
-                routePolyline = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+                routePolyline = L.polyline(coordinates, { color: 'red' }).addTo(map);
 
                 // Turn-by-turn directions
                 const instructions = data.paths[0].instructions;
@@ -388,7 +475,7 @@
             } catch (error) {
                 console.error('Rota hesaplanamadı:', error);
             }
-            await sleep(3000);  // 3 saniye bekle
+            await sleep(1500);  // 1.5 saniye bekle
         }
 
         function calculateDistance(lat1, lng1, lat2, lng2) {
