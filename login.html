@@ -3,28 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Servis Uygulamasına Hoşgeldiniz!</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Login</h1>
-        <form id="loginForm">
-            <input type="text" id="username" placeholder="Username" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
+    <div class="main">
+        <div class="form-box">
+            <div class="button-box">
+                <div id="btn"></div>
+                <button type="button" class="toggle-btn" onclick="login()">Log In</button> 
+                <button type="button" class="toggle-btn" onclick="register()">Register</button> 
+            </div>
+
+            <!-- Login Form -->
+           <form id="Login" class="input-group" onsubmit="saveLogin(event)">
+             <input type="text" id="loginUsername" class="input-field" placeholder="Kullanıcı Adınızı Giriniz." required>
+               <input type="password" id="loginPassword" class="input-field" placeholder="Şifrenizi Giriniz." required>
+                 <a href="#">Şifremi Unuttum</a>
+                   <button type="submit" class="submit-btn">Login</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="Register" class="input-group" onsubmit="saveRegister(event)">
+                <input type="text" id="registerUsername" class="input-field" placeholder="Kullanıcı Adınızı Giriniz." required>
+                <input type="password" id="registerPassword" class="input-field" placeholder="Şifrenizi Giriniz." required>
+                <input type="email" id="registerEmail" class="input-field" placeholder="E-mailinizi Giriniz." required>
+                <button type="submit" class="submit-btn">Register</button>
+            </form>    
+        </div>
     </div>
 
-    <div class="container">
-        <h1>Register</h1>
-        <form id="registerForm">
-            <input type="text" id="regUsername" placeholder="Username" required>
-            <input type="password" id="regPassword" placeholder="Password" required>
-            <button type="submit">Register</button>
-        </form>
-    </div>
+    <script>
+        
+        var x = document.getElementById("Login");
+        var z = document.getElementById("Register");
+        var y = document.getElementById("btn");
 
-    <script src="script.js"></script>
+        function register(){
+            x.style.left = "-400px";
+            z.style.left = "50px";
+            y.style.left = "110px";
+        }
+
+        function login(){
+            x.style.left = "50px";
+            z.style.left = "450px";
+            y.style.left = "0px";
+        }
+
+        async function saveRegister(event) {
+            event.preventDefault(); // Formun sayfa yenilemesini engelle
+
+            var username = document.getElementById('registerUsername').value;
+            var password = document.getElementById('registerPassword').value;
+            var email = document.getElementById('registerEmail').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json' // JSON formatında yanıt bekle
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        email: email
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                alert('Register başarılı: ' + data.username);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Register başarısız oldu.');
+            }
+        }
+
+        async function saveLogin(event) {
+            event.preventDefault(); // Formun sayfa yenilemesini engelle
+
+            var username = document.getElementById('loginUsername').value;
+            var password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json' // JSON formatında yanıt bekle
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = 'harita.html'; // Kullanıcıyı yönlendir
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Giriş başarısız oldu.');
+            }
+        }
+    </script>
 </body>
 </html>

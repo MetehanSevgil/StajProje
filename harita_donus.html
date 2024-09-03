@@ -5,44 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Servis Şoförü Uygulaması</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles2.css">
-    <script src="popup.js"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            display: flex;
+            height: 100%;
+        }
+
+        #map {
+            height: 100%;
+            width: 85%;
+            float: left; /* Harita sol tarafa yaslanacak */
+        }
+
+        #directions {
+            width: 15%;
+            padding: 10px;
+            box-sizing: border-box;
+            height: 100vh; /* Tam ekran yüksekliği */
+            overflow-y: auto; /* İçerik fazla olursa kaydırma */
+            float: right; /* Sağ tarafa yaslanacak */
+            background-color: white; /* Arka plan rengini beyaz yap */
+            border-left: 1px solid #ddd; /* Sol kenar için hafif bir sınır */
+        }
+        
+        #locationList {
+            clear: both; /* Harita ve yol tarifi alanını temizle */
+            padding: 10px;
+        }
+        #directions h3 {
+            margin-top: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .instruction-icon {
+            width: 24px;  /* İkon genişliği */
+            height: 24px; /* İkon yüksekliği */
+        }
+
+        #directions ol {
+            padding-left: 20px;
+            list-style-type: none; /* Numaralandırmayı gizle */
+            counter-reset: step-counter;
+        }
+
+        #directions ol li {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-left: 5px solid #007bff;
+            border-radius: 5px;
+            position: relative;
+            font-size: 16px;
+            color: #555;
+            counter-increment: step-counter;
+        }
+
+        #directions ol li::before {
+            content: counter(step-counter);
+            position: absolute;
+            top: 50%;
+            left: -30px;
+            transform: translateY(-50%);
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+            background-color: #fff;
+            border: 2px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #directions ol li .instruction-icon {
+            margin-right: 10px;
+        }
+
+    </style>
 </head>
 <body>
     <body>
-        <div class="main">
-            <div class="form-box2">
-                <div class="button-box2">
-                    <button type="button" class="toggle-btn2">Gidiş Rotası</button>
-                    <button type="button" class="toggle-btn2">Dönüş Rotası</button>
-                    <button type="button" class="toggle-btn2" onclick="openPopupJs()">Yeni Rota Ekle</button>
-                    <button type="button" class="toggle-btn2">Serbest Rota</button>
-                </div>
-                <div class="controls">
-                    <button id="setEndButton" disabled>Bitiş Noktası Seç</button>
-                    <button id="calculateRouteButton" disabled>Sonraki Hedefe Git</button>
-                    <button id="addStudentButton">Öğrenci Ekle</button>
-                </div>
-            </div>
+        <div class="controls">
+            <button id="setEndButton" disabled>Bitiş Noktası Seç</button>
+            <button id="calculateRouteButton" disabled>Sonraki Hedefe Git</button>
+            <button id="addStudentButton">Öğrenci Ekle</button>
         </div>
-    
-        <div id="popup" class="popup">
-            <div class="popup-content">
-                <span id="closePopup" class="close">&times;</span>
-                <h2>Rota Kaydetme Seçenekleri</h2>
-                <button class="option">Seçenek 1</button>
-                <button class="option">Seçenek 2</button>
-                <button class="option">Seçenek 3</button>
-            </div>
-        </div>
-    
         <div class="container">
             <div id="map"></div>
             <div id="directions">
-                <h3>Yol Tarifi</h3>
+                <h3>Yol Tarifi</h3> 
             </div>
         </div>
-    
         <div id="locationList">
             <h3>Eklenen Konumlar</h3>
             <ul id="studentList"></ul>
@@ -116,7 +180,7 @@
                 endLocation = {
                     lat,
                     lng,
-                    marker: L.marker([lat, lng], { icon: endIcon }).addTo(map).bindPopup("Okul").openPopup()
+                    marker: L.marker([lat, lng], { icon: endIcon }).addTo(map).bindPopup("Bitiş").openPopup()
                 };
                 selectionMode = null;
             } 
@@ -214,79 +278,6 @@
         }
                
         async function calculateNextDestination() {
-            if (!startLocation || studentLocations.length === 0 || !endLocation) {
-                alert("Lütfen okul noktasını belirleyin !!!");
-                return;
-            }
-
-            // Yolculuğu başlat  butonu pasif olsun
-            document.getElementById('calculateRouteButton').disabled = true;
-
-            let bestRoute = null;
-            let shortestDistance = Infinity;
-
-            // Brut force yöntemi ile tüm permütasyonları elde edelim
-            const allPermutations = getPermutations(studentLocations);
-
-            // Tüm rotaları değerlendirelim
-            allPermutations.forEach(permutation => {
-                let totalDistance = 0;
-                let currentLocation = startLocation;
-
-                // Her permütasyon için toplam mesafeyi hesapla
-                permutation.forEach(student => {
-                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, student.lat, student.lng);
-                    currentLocation = student;
-                });
-
-                // Bitiş noktasına (okula) olan mesafeyi ekle
-                totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, endLocation.lat, endLocation.lng);
-
-                // En kısa mesafeli rotayı güncelle
-                if (totalDistance < shortestDistance) {
-                    shortestDistance = totalDistance;
-                    bestRoute = permutation;
-                }
-            });
-
-            // En kısa rotayı çizelim
-            let currentLocation = startLocation;
-            for (let i = 0; i < bestRoute.length; i++) {
-                await calculateRoute(currentLocation, bestRoute[i]);
-                currentLocation = bestRoute[i];
-            }
-
-            // Son olarak, okula dönüş rotasını hesaplayalım
-            await calculateRoute(currentLocation, endLocation);
-        }
-
-        // Permütasyonları hesaplayan fonksiyon
-        function getPermutations(array) {
-            let results = [];
-
-            function permute(arr, memo = []) {
-                let cur;
-                for (let i = 0; i < arr.length; i++) {
-                    cur = arr.splice(i, 1);
-                    if (arr.length === 0) {
-                        results.push(memo.concat(cur));
-                    }
-                    permute(arr.slice(), memo.concat(cur));
-                    arr.splice(i, 0, cur[0]);
-                }
-                return results;
-            }
-
-            return permute(array);
-        }
-
-        // Bekleme fonksiyonu
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Dönüş yolculuğu fonksiyonu
-        async function calculateNextDestinationBack() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
                 alert("Lütfen başlangıç noktası olan okulu seçiniz !!!")
                 return;
