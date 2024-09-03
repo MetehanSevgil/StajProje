@@ -13,15 +13,12 @@
         <div class="main">
             <div class="form-box2">
                 <div class="button-box2">
-                    <button type="button" class="toggle-btn2">Gidiş Rotası</button>
-                    <button type="button" class="toggle-btn2">Dönüş Rotası</button>
-                    <button type="button" class="toggle-btn2" onclick="openPopupJs()">Yeni Rota Ekle</button>
-                    <button type="button" class="toggle-btn2">Serbest Rota</button>
-                </div>
-                <div class="controls">
-                    <button id="setEndButton" disabled>Bitiş Noktası Seç</button>
-                    <button id="calculateRouteButton" disabled>Sonraki Hedefe Git</button>
-                    <button id="addStudentButton">Öğrenci Ekle</button>
+                    <button id= "calculatego" type="button" class="toggle-btn2" disabled>Gidiş Rotası</button>
+                    <button id= "calculateback" type="button" class="toggle-btn2" disabled>Dönüş Rotası</button>
+                    <button id= "relaxbutton" type="button" class="toggle-btn2" disabled>Serbest Rota</button>
+                    <button id= "setEndButton" type="button" class="toggle-btn2" disabled>Bitiş Noktası Seç</button>
+                    <button id= "calculateRouteButton" type="button" class="toggle-btn2" disabled>Yolculuğu Başlat</button>
+                    <button id= "addStudentButton" type="button" class="toggle-btn2" >Öğrenci Ekle</button>
                 </div>
             </div>
         </div>
@@ -80,14 +77,14 @@
 
         const predefinedStudentLocations = [
             { lat: 41.041165260742396, lng: 28.817141411969565},
-            { lat: 41.037800152855674, lng: 28.823173663219304},
             { lat: 41.029406400826005, lng: 28.841766535181446},
-            { lat: 41.041416863682386, lng: 28.82625947022461},          
-            { lat: 41.042929385268275, lng: 28.82131677857204},
-            { lat: 41.030092513431654, lng: 28.798804597566644},
-            { lat: 41.035861371909625 , lng: 28.799697753991975},
+            { lat: 41.041416863682386, lng: 28.826259470224614},          
+            { lat: 41.041950430892741, lng: 28.844682616433271},
+            { lat: 41.035861371909625, lng: 28.799697753991975},
             { lat: 41.027933891977011, lng: 28.818202100263893},
-            { lat: 41.023731010994245, lng: 28.841566254786457}
+            { lat: 41.023731010994245, lng: 28.841566254786457},
+            { lat: 41.030409660402143, lng: 28.830523549061427},
+            { lat: 41.023378101009191, lng: 28.832761323391047}
         ];
 
         let startLocation = null;
@@ -103,6 +100,10 @@
 
         document.getElementById('calculateRouteButton').textContent = 'Yolculuğu başlat';
         document.getElementById('calculateRouteButton').addEventListener('click', calculateNextDestination);
+
+        document.getElementById('calculatego').addEventListener('click', calculateNextDestination);
+
+        document.getElementById('calculateback').addEventListener('click', calculateNextDestinationBack);
 
         map.on('click', function(e) {
             const { lat, lng } = e.latlng;
@@ -205,6 +206,8 @@
                 studentList.appendChild(listItem);
             }
             document.getElementById('calculateRouteButton').disabled = false;
+            document.getElementById('calculatego').disabled = false;
+            document.getElementById('calculateback').disabled = false;
         }
 
         function highlightLocation(listItem, locationObject) {
@@ -278,11 +281,6 @@
             }
 
             return permute(array);
-        }
-
-        // Bekleme fonksiyonu
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
         }
 
         // Dönüş yolculuğu fonksiyonu
