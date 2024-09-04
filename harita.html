@@ -155,12 +155,6 @@
 
             // Öğrenci konumlarını başlangıçta yükle
             addPredefinedStudentLocations();
-
-            // Bitiş butonu aktif kalsın
-            document.getElementById('setEndButton').disabled = false;
-
-            // Serbest Bitiş Noktası butonu aktif kalsın
-            document.getElementById('setEndRelaxButton').disabled = false;
         };
 
         // Nominatim API anahtarı gerekmiyor, ama istek limitlerine dikkat et
@@ -226,10 +220,6 @@
                 listItem.addEventListener('click', () => highlightLocation(listItem, locationObject));
                 studentList.appendChild(listItem);
             }
-            document.getElementById('calculateRouteButton').disabled = false;
-            document.getElementById('calculateRouteButtonBack').disabled = false;
-            document.getElementById('calculatego').disabled = false;
-            document.getElementById('calculateback').disabled = false;
         }
 
         function highlightLocation(listItem, locationObject) {
@@ -243,9 +233,6 @@
                 alert("Lütfen okul noktasını belirleyin !!!");
                 return;
             }
-
-            // Gidiş yolculuğunu göster butonu pasif olsun
-            document.getElementById('calculateRouteButton').disabled = true;
 
             let bestRoute = null;
             let shortestDistance = Infinity;
@@ -285,9 +272,6 @@
                 alert("Serbest rota son öğrencide, okulda veya istediğiniz bir noktada bitebilir !!!");
                 return;
             }
-
-            // Serbest Rota butonu pasif olsun
-            document.getElementById('relaxbutton').disabled = false;
 
             let bestRoute = null;
             let shortestDistance = Infinity;
@@ -354,9 +338,6 @@
                 alert("Lütfen başlangıç noktası olan okulu seçiniz !!!")
                 return;
             }
-
-            // Dönüş Yolculuğunu Göster butonu pasif olsun
-            document.getElementById('calculateRouteButtonBack').disabled = true;
 
             let bestRoute = null;
             let shortestDistance = Infinity;
@@ -430,9 +411,6 @@
                 return;
             }
 
-            // Gidiş Rotası butonu pasif olsun
-            document.getElementById('calculatego').disabled = true;
-
             let bestRoute = null;
             let shortestDistance = Infinity;
 
@@ -498,9 +476,6 @@
                 return;
             }
 
-            // Dönüş Rotası butonu pasif olsun
-            document.getElementById('calculateback').disabled = true;
-
             let bestRoute = null;
             let shortestDistance = Infinity;
 
@@ -545,9 +520,6 @@
                 alert("Serbest rota son öğrencide, okulda veya istediğiniz bir noktada bitebilir !!!");
                 return;
             }
-
-            // Serbest Rota butonu pasif olsun
-            document.getElementById('relaxbutton').disabled = false;
 
             let bestRoute = null;
             let shortestDistance = Infinity;
