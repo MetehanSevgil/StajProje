@@ -1,40 +1,43 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Servis Şoförü Uygulaması</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles2.css">
+    <link rel="stylesheet" href="harita.css">
 </head>
+
 <body>
-    <body>
-        <div class="main">
-            <div class="form-box2">
-                <div class="button-box2">
-                    <button id= "calculatego" type="button" class="toggle-btn2" disabled>Gidiş Rotası</button>
-                    <button id= "calculateback" type="button" class="toggle-btn2" disabled>Dönüş Rotası</button>
-                    <button id= "relaxbutton" type="button" class="toggle-btn2" disabled>Serbest Rota</button>
-                    <button id= "setEndButton" type="button" class="toggle-btn2" disabled>Bitiş Noktası Seç</button>
-                    <button id= "calculateRouteButton" type="button" class="toggle-btn2" disabled>Gidiş Yolculuğu Göster</button>
-                    <button id= "calculateRouteButtonBack" type="button" class="toggle-btn2" disabled>Dönüş Yolculuğu Göster</button>
-                    <button id= "addStudentButton" type="button" class="toggle-btn2" >Öğrenci Ekle</button>
-                </div>
+    <div class="main">
+        <div class="form-box2">
+            <div class="button-box2">
+                <button id="calculateRouteButton" type="button" class="toggle-btn2">Gidiş Yolculuğu Göster</button>
+                <button id="calculateRouteButtonBack" type="button" class="toggle-btn2">Dönüş Yolculuğu Göster</button>
+                <button id="calculateRouteButtonRelax" type="button" class="toggle-btn2">Serbest Rotayı Göster</button>
+                <button id="calculatego" type="button" class="toggle-btn2">Gidiş Rotası</button>
+                <button id="calculateback" type="button" class="toggle-btn2">Dönüş Rotası</button>
+                <button id="relaxbutton" type="button" class="toggle-btn2">Serbest Rota</button>
+                <button id="setEndButton" type="button" class="toggle-btn2">Bitiş Noktası Seç</button>
+                <button id="setEndRelaxButton" type="button" class="toggle-btn2">Serbest Bitiş Noktası Seç</button>
+                <button id="addStudentButton" type="button" class="toggle-btn2">Öğrenci Ekle</button>
             </div>
-        </div>    
-        <div class="container">
-            <div id="map"></div>
-            <div id="directions">
-                <h3>Yol Tarifi</h3>
-            </div>
-        </div>  
-        <div id="locationList">
-            <h3>Eklenen Konumlar</h3>
-            <ul id="studentList"></ul>
         </div>
+    </div>
+    <div class="container">
+        <div id="map"></div>
+        <div id="directions">
+            <h3>Yol Tarifi</h3>
+        </div>
+    </div>
+    <div id="locationList">
+        <h3>Eklenen Konumlar</h3>
+        <ul id="studentList"></ul>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>  
+    <script>
         const apiKey = 'e08c2355-fda9-45c5-87de-700ad2b1b12c'; // GraphHopper API anahtarı
         const map = L.map('map').setView([41.04054087961094, 28.850040545545284], 13);
 
@@ -43,19 +46,26 @@
         }).addTo(map);
 
         const startIcon = L.icon({
-            iconUrl: 'home.png',
-            iconSize: [35, 41],
+            iconUrl: 'images/home.png',
+            iconSize: [50, 50],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34]
         });
 
         const endIcon = L.icon({
-            iconUrl: 'school.png',
+            iconUrl: 'images/school.png',
             iconSize: [35, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34]
         });
-        
+
+        const relaxFinishIcon = L.icon({
+            iconUrl: 'images/relax_finish.png',
+            iconSize: [35, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        });
+
         var studentIcon = L.icon({
             iconUrl: 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png',
             iconSize: [35, 35],
@@ -64,19 +74,20 @@
         });
 
         const predefinedStudentLocations = [
-            { lat: 41.041165260742396, lng: 28.817141411969565},
-            { lat: 41.029406400826005, lng: 28.841766535181446},
-            { lat: 41.041416863682386, lng: 28.826259470224614},          
-            { lat: 41.041950430892741, lng: 28.844682616433271},
-            { lat: 41.035861371909625, lng: 28.799697753991975},
-            { lat: 41.027933891977011, lng: 28.818202100263893},
-            { lat: 41.042812289925911, lng:28.8661282060054521},
-            { lat: 41.030409660402143, lng: 28.830523549061427},
-            { lat: 41.023378101009191, lng: 28.832761323391047}
+            { lat: 41.041165260742396, lng: 28.817141411969565 },
+            { lat: 41.029406400826005, lng: 28.841766535181446 },
+            { lat: 41.041416863682386, lng: 28.826259470224614 },
+            { lat: 41.028219161187764, lng: 28.87778451289138 },
+            { lat: 41.035861371909625, lng: 28.799697753991975 },
+            { lat: 41.027933891977011, lng: 28.818202100263893 },
+            { lat: 41.042812289925911, lng: 28.866128206005452 },
+            { lat: 41.030409660402143, lng: 28.830523549061427 },
+            { lat: 41.02253313071108, lng: 28.87660798531185 }
         ];
 
         let startLocation = null;
         let endLocation = null;
+        let relaxLocation = null;
         let studentLocations = [];
         let routePolyline = null; // Rota polyline'ı için değişken
         let selectionMode = null;  // "start", "end"
@@ -86,20 +97,24 @@
             alert('Lütfen bitiş noktasını seçin.');
         });
 
+        document.getElementById('setEndRelaxButton').addEventListener('click', () => {
+            selectionMode = "relax";
+            alert('Lütfen serbest bitiş noktasını seçin. ');
+        });
+
         document.getElementById('calculateRouteButton').addEventListener('click', showAllRotateGo);
-
         document.getElementById('calculateRouteButtonBack').addEventListener('click', showAllRotateBack);
-
+        document.getElementById('calculateRouteButtonRelax').addEventListener('click', showAllRotateRelax);
         document.getElementById('calculatego').addEventListener('click', calculateNextDestination);
-
         document.getElementById('calculateback').addEventListener('click', calculateNextDestinationBack);
+        document.getElementById('relaxbutton').addEventListener('click', calculateNextDestinationRelax);
 
-        map.on('click', function(e) {
+        map.on('click', function (e) {
             const { lat, lng } = e.latlng;
 
             if (selectionMode === "end") {
                 if (endLocation) {
-                    map.removeLayer(endLocation.marker);  // Eski bitiş konumunu değiştirir
+                    map.removeLayer(endLocation.marker);  // Eski bitiş konumunu değiştir
                 }
 
                 // Yeni bitiş konumu
@@ -109,14 +124,28 @@
                     marker: L.marker([lat, lng], { icon: endIcon }).addTo(map).bindPopup("Okul").openPopup()
                 };
                 selectionMode = null;
-            } 
+            }
+
+            if (selectionMode == "relax") {
+                if (relaxLocation) {
+                    map.removeLayer(relaxLocation.marker);  // Eski serbest rota bitiş konumunu değiştir
+                }
+
+                // Yeni bitiş konumu
+                relaxLocation = {
+                    lat,
+                    lng,
+                    marker: L.marker([lat, lng], { icon: relaxFinishIcon }).addTo(map).bindPopup("Serbest Bitiş Noktası").openPopup()
+                };
+                selectionMode = null;
+            }
         });
 
         const startLat = 41.058944608514906;
         const startLng = 28.84145666132722;
 
         // Sayfa yüklendiğinde ev ve öğrenci konumlarını ekleyelim
-         window.onload = function() {
+        window.onload = function () {
             // Ev konumunu ekleyelim
             startLocation = {
                 lat: startLat,
@@ -129,6 +158,9 @@
 
             // Bitiş butonu aktif kalsın
             document.getElementById('setEndButton').disabled = false;
+
+            // Serbest Bitiş Noktası butonu aktif kalsın
+            document.getElementById('setEndRelaxButton').disabled = false;
         };
 
         // Nominatim API anahtarı gerekmiyor, ama istek limitlerine dikkat et
@@ -158,7 +190,7 @@
             // Geocoding ile adresi al
             const address = await getAddress(lat, lng);
 
-            const newStudentMarker = L.marker([lat, lng], {icon: studentIcon})
+            const newStudentMarker = L.marker([lat, lng], { icon: studentIcon })
                 .addTo(map)
                 .bindPopup(`Yeni Öğrenci: ${address}`)
                 .openPopup();
@@ -179,7 +211,7 @@
                 const studentNumber = index + 1;
                 const address = await getAddress(loc.lat, loc.lng);
 
-                const marker = L.marker([loc.lat, loc.lng], { icon: studentIcon})
+                const marker = L.marker([loc.lat, loc.lng], { icon: studentIcon })
                     .addTo(map)
                     .bindPopup(`Öğrenci: ${address}`)
                     .openPopup();
@@ -205,14 +237,14 @@
             map.setView([locationObject.lat, locationObject.lng], 14);
             locationObject.marker.openPopup();
         }
-               
+
         async function showAllRotateGo() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
                 alert("Lütfen okul noktasını belirleyin !!!");
                 return;
             }
 
-            // Yolculuğu başlat  butonu pasif olsun
+            // Gidiş yolculuğunu göster butonu pasif olsun
             document.getElementById('calculateRouteButton').disabled = true;
 
             let bestRoute = null;
@@ -247,6 +279,75 @@
             await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
         }
 
+        // Serbest rota yolculuğu fonksiyonu
+        async function showAllRotateRelax() {
+            if (!startLocation || studentLocations.length === 0) {
+                alert("Serbest rota son öğrencide, okulda veya istediğiniz bir noktada bitebilir !!!");
+                return;
+            }
+
+            // Serbest Rota butonu pasif olsun
+            document.getElementById('relaxbutton').disabled = false;
+
+            let bestRoute = null;
+            let shortestDistance = Infinity;
+
+            // Brut force yöntemi ile tüm permütasyonları elde edelim
+            const allPermutations = getPermutations(studentLocations);
+
+            // Tüm rotaları değerlendirelim
+            allPermutations.forEach(permutation => {
+                let totalDistance = 0;
+                let currentLocation = startLocation;
+
+                // Her permütasyon için toplam mesafeyi hesapla
+                permutation.forEach(student => {
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, student.lat, student.lng);
+                    currentLocation = student;
+                });
+
+                // Eğer okul konumu eklenirse bunuda hesaplasın
+                if (endLocation) {
+                    // Son öğrenciden olan mesafeyi ekle
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, endLocation.lat, endLocation.lng);
+                }
+
+                // Eğer serbest bitiş eklenirse bunuda hesaplasın
+                if (relaxLocation) {
+                    // Son öğrenciden olan mesafeyi ekle
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, relaxLocation.lat, relaxLocation.lng);
+                }
+
+                // En kısa mesafeli rotayı güncelle
+                if (totalDistance < shortestDistance) {
+                    shortestDistance = totalDistance;
+                    bestRoute = permutation;
+                }
+            });
+
+            // Eğer hem serbest bitiş konumu hem de bitiş konumu varsa
+            if (relaxLocation && endLocation) {
+                // En kısa rotayı hesapla ve çizelim
+                let allLocations = [startLocation, ...bestRoute, endLocation, relaxLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
+                await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+            }
+            // Eğer sadece serbest bitiş konumu varsa
+            else if (relaxLocation) {
+                let allLocations = [startLocation, ...bestRoute, relaxLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
+                await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+            }
+            // Eğer sadece bitiş konumu varsa
+            else if (endLocation) {
+                let allLocations = [startLocation, ...bestRoute, endLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
+                await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+            }
+            // Eğer sadece başlangıç ve öğrenci konumları varsa
+            else {
+                let allLocations = [startLocation, ...bestRoute]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
+                await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+            }
+        }
+
         // Dönüş yolculuğu fonksiyonu
         async function showAllRotateBack() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
@@ -254,8 +355,8 @@
                 return;
             }
 
-            // Yolculuğu başlat  butonu pasif olsun
-            document.getElementById('calculateRouteButton').disabled = true;
+            // Dönüş Yolculuğunu Göster butonu pasif olsun
+            document.getElementById('calculateRouteButtonBack').disabled = true;
 
             let bestRoute = null;
             let shortestDistance = Infinity;
@@ -308,7 +409,7 @@
                 const instructions = data.paths[0].instructions;
                 let directionsHtml = '<h3>Yol Tarifi:</h3><ol>';
                 instructions.forEach(instr => {
-                    const iconHtml = `<img src="turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
+                    const iconHtml = `<img src="images/turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
                     directionsHtml += `<li>${iconHtml}${instr.text}</li>`;
                 });
                 directionsHtml += '</ol>';
@@ -329,8 +430,8 @@
                 return;
             }
 
-            // Yolculuğu başlat  butonu pasif olsun
-            document.getElementById('calculateRouteButton').disabled = true;
+            // Gidiş Rotası butonu pasif olsun
+            document.getElementById('calculatego').disabled = true;
 
             let bestRoute = null;
             let shortestDistance = Infinity;
@@ -397,8 +498,8 @@
                 return;
             }
 
-            // Yolculuğu başlat  butonu pasif olsun
-            document.getElementById('calculateRouteButton').disabled = true;
+            // Dönüş Rotası butonu pasif olsun
+            document.getElementById('calculateback').disabled = true;
 
             let bestRoute = null;
             let shortestDistance = Infinity;
@@ -438,6 +539,75 @@
             await calculateRoute(currentLocation, startLocation);
         }
 
+        // Serbest rota için hesaplama fonksiyonu
+        async function calculateNextDestinationRelax() {
+            if (!startLocation || studentLocations.length === 0) {
+                alert("Serbest rota son öğrencide, okulda veya istediğiniz bir noktada bitebilir !!!");
+                return;
+            }
+
+            // Serbest Rota butonu pasif olsun
+            document.getElementById('relaxbutton').disabled = false;
+
+            let bestRoute = null;
+            let shortestDistance = Infinity;
+
+            // Brut force yöntemi ile tüm permütasyonları elde edelim
+            const allPermutations = getPermutations(studentLocations);
+
+            // Tüm rotaları değerlendirelim
+            allPermutations.forEach(permutation => {
+                let totalDistance = 0;
+                let currentLocation = startLocation;
+
+                // Her permütasyon için toplam mesafeyi hesapla
+                permutation.forEach(student => {
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, student.lat, student.lng);
+                    currentLocation = student;
+                });
+
+                // Eğer okul konumu eklenirse bunuda hesaplasın
+                if (endLocation) {
+                    // Son öğrenciden olan mesafeyi ekle
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, endLocation.lat, endLocation.lng);
+                }
+
+                // Eğer okul konumu eklenirse bunuda hesaplasın
+                if (relaxLocation) {
+                    // Son öğrenciden olan mesafeyi ekle
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, relaxLocation.lat, relaxLocation.lng);
+                }
+
+                // En kısa mesafeli rotayı güncelle
+                if (totalDistance < shortestDistance) {
+                    shortestDistance = totalDistance;
+                    bestRoute = permutation;
+                }
+            });
+
+            // En kısa rotayı çizelim
+            let currentLocation = startLocation;
+            for (let i = 0; i < bestRoute.length; i++) {
+                await calculateRoute(currentLocation, bestRoute[i]);
+                currentLocation = bestRoute[i];
+            }
+
+            // Eğer hem serbest bitiş konumu hem de bitiş konumu varsa
+            if (relaxLocation && endLocation) {
+                // Önce serbest bitiş konumuna uğrasın, sonra bitiş konumuna
+                await calculateRoute(currentLocation, endLocation);
+                await calculateRoute(endLocation, relaxLocation);
+            }
+            // Eğer sadece serbest bitiş konumu varsa
+            else if (relaxLocation) {
+                await calculateRoute(currentLocation, relaxLocation);
+            }
+            // Eğer sadece bitiş konumu varsa
+            else if (endLocation) {
+                await calculateRoute(currentLocation, endLocation);
+            }
+        }
+
         // Bekleme fonksiyonu
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
@@ -463,7 +633,7 @@
                 const instructions = data.paths[0].instructions;
                 let directionsHtml = '<h3>Yol Tarifi:</h3><ol>';
                 instructions.forEach(instr => {
-                    const iconHtml = `<img src="turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
+                    const iconHtml = `<img src="images/turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
                     directionsHtml += `<li>${iconHtml}${instr.text}</li>`;
                 });
                 directionsHtml += '</ol>';
@@ -483,8 +653,8 @@
             const dLat = toRad(lat2 - lat1);
             const dLng = toRad(lng2 - lng1);
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c;
         }
@@ -492,7 +662,7 @@
         function toRad(degrees) {
             return degrees * (Math.PI / 180);
         }
-
     </script>
 </body>
+
 </html>

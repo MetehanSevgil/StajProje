@@ -64,9 +64,17 @@ body, html {
     width: 15%;
     padding: 10px;
     box-sizing: border-box;
-    background-color: white;
+    background: linear-gradient(to right, #20aa3e, #3b1fc5);/* Butonlardaki renk geçişine uygun gradient */
+    color: rgb(0, 0, 0);
     border-left: 1px solid #ddd;
     overflow-y: auto;
+}
+
+#directions h3 {
+    text-align: center;
+    margin: 0; /* Varsayılan margin değerini sıfırlayarak tam ortalama sağlar */
+    padding: 10px 0; /* Üstten ve alttan biraz boşluk ekleyebilirsin */
+    font-size: 24px; /* Başlık boyutunu ayarlayabilirsin */
 }
 
 /* Dönüş image boyut ayarlama */
