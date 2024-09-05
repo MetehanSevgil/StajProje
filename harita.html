@@ -19,7 +19,9 @@
                 <button id="calculatego" type="button" class="toggle-btn2">Gidiş Rotası</button>
                 <button id="calculateback" type="button" class="toggle-btn2">Dönüş Rotası</button>
                 <button id="relaxbutton" type="button" class="toggle-btn2">Serbest Rota</button>
-                <button id="setEndButton" type="button" class="toggle-btn2">Bitiş Noktası Seç</button>
+                <button id="setStartButton" type="button" class="toggle-btn2">Başlangıç Noktasını Değiştir</button>
+                <button id="setEndButton" type="button" class="toggle-btn2">Okul Noktasını Seç</button>
+                <button id="setDeleteButton" type="button" class="toggle-btn2">Okul Noktasını Kaldır</button>
                 <button id="setEndRelaxButton" type="button" class="toggle-btn2">Serbest Bitiş Noktası Seç</button>
                 <button id="addStudentButton" type="button" class="toggle-btn2">Öğrenci Ekle</button>
             </div>
@@ -59,6 +61,13 @@
             popupAnchor: [1, -34]
         });
 
+        const newStartIcon = L.icon({
+            iconUrl: 'images/start.png',
+            iconSize: [35, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        });
+
         const relaxFinishIcon = L.icon({
             iconUrl: 'images/relax_finish.png',
             iconSize: [35, 41],
@@ -90,7 +99,24 @@
         let relaxLocation = null;
         let studentLocations = [];
         let routePolyline = null; // Rota polyline'ı için değişken
-        let selectionMode = null;  // "start", "end"
+        let selectionMode = null;  // "start", "end", "relax"
+
+        document.getElementById('setStartButton').addEventListener('click', () => {
+            selectionMode = "start";
+            alert('Yeni başlangıç noktasını seçin.');
+        });
+
+        document.getElementById('setDeleteButton').addEventListener('click', () => {
+            if(endLocation){
+                map.removeLayer(endLocation.marker);  // Okul konumunu kaldır     
+                endLocation = null;
+                alert('Okul noktası silindi !!!');
+            }
+            else{
+                alert("Okul noktası zaten silimiş !!!");
+            }
+            
+        });
 
         document.getElementById('setEndButton').addEventListener('click', () => {
             selectionMode = "end";
@@ -99,7 +125,7 @@
 
         document.getElementById('setEndRelaxButton').addEventListener('click', () => {
             selectionMode = "relax";
-            alert('Lütfen serbest bitiş noktasını seçin. ');
+            alert('Lütfen serbest bitiş noktasını seçin.');
         });
 
         document.getElementById('calculateRouteButton').addEventListener('click', showAllRotateGo);
@@ -112,9 +138,23 @@
         map.on('click', function (e) {
             const { lat, lng } = e.latlng;
 
+            if (selectionMode === "start") {
+                if (startLocation) {
+                    map.removeLayer(startLocation.marker);  // Eski bitiş konumunu değiştir
+                }
+
+                // Yeni Başlangıç konumu
+                startLocation = {
+                    lat,
+                    lng,
+                    marker: L.marker([lat, lng], { icon: newStartIcon }).addTo(map).bindPopup("Yeni Başlangıç").openPopup()
+                };
+                selectionMode = null;
+            }
+
             if (selectionMode === "end") {
                 if (endLocation) {
-                    map.removeLayer(endLocation.marker);  // Eski bitiş konumunu değiştir
+                    map.removeLayer(endLocation.marker);  // Eski okul konumunu değiştir
                 }
 
                 // Yeni bitiş konumu
