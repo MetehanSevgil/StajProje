@@ -312,6 +312,50 @@
             locationObject.marker.openPopup();
         }
 
+        function updateStudentNumbers(route) {
+            route.forEach((student, index) => {
+                // Öğrenci numarasını güncelle
+                const studentNumber = index + 1;
+                const marker = student.marker;
+                const iconHtml = `
+                    <div style="position: relative; text-align: center;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Student Icon" style="width: 30px; height: 30px;">
+                        <div id="student-number-${student.index}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+                                    display: flex; align-items: center; justify-content: center; 
+                                    font-weight: bold; color: black; font-size: 14px;">
+                            ${studentNumber}
+                        </div>
+                    </div>
+                `;
+                const studentIconWithNumber = L.divIcon({
+                    html: iconHtml,
+                    iconSize: [30, 30],
+                    className: ''
+                });
+                marker.setIcon(studentIconWithNumber);
+            });
+        }
+
+        // Permütasyonları hesaplayan fonksiyon
+        function getPermutations(array) {
+            let results = [];
+
+            function permute(arr, memo = []) {
+                let cur;
+                for (let i = 0; i < arr.length; i++) {
+                    cur = arr.splice(i, 1);
+                    if (arr.length === 0) {
+                        results.push(memo.concat(cur));
+                    }
+                    permute(arr.slice(), memo.concat(cur));
+                    arr.splice(i, 0, cur[0]);
+                }
+                return results;
+            }
+
+            return permute(array);
+        }
+
         async function showAllRotateGo() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
                 alert("Lütfen okul noktasını belirleyin !!!");
@@ -353,28 +397,46 @@
             updateStudentNumbers(bestRoute);
         }
 
-        function updateStudentNumbers(route) {
-            route.forEach((student, index) => {
-                // Öğrenci numarasını güncelle
-                const studentNumber = index + 1;
-                const marker = student.marker;
-                const iconHtml = `
-                    <div style="position: relative; text-align: center;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Student Icon" style="width: 30px; height: 30px;">
-                        <div id="student-number-${student.index}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                                    display: flex; align-items: center; justify-content: center; 
-                                    font-weight: bold; color: black; font-size: 14px;">
-                            ${studentNumber}
-                        </div>
-                    </div>
-                `;
-                const studentIconWithNumber = L.divIcon({
-                    html: iconHtml,
-                    iconSize: [30, 30],
-                    className: ''
+        // Dönüş yolculuğu fonksiyonu
+        async function showAllRotateBack() {
+            if (!startLocation || studentLocations.length === 0 || !endLocation) {
+                alert("Lütfen başlangıç noktası olan okulu seçiniz !!!")
+                return;
+            }
+
+            let bestRoute = null;
+            let shortestDistance = Infinity;
+
+            // Brut force yöntemi ile tüm permütasyonları elde edelim
+            const allPermutations = getPermutations(studentLocations);
+
+            // Tüm rotaları değerlendirelim
+            allPermutations.forEach(permutation => {
+                let totalDistance = 0;
+                let currentLocation = endLocation;
+
+                // Her permütasyon için toplam mesafeyi hesapla
+                permutation.forEach(student => {
+                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, student.lat, student.lng);
+                    currentLocation = student;
                 });
-                marker.setIcon(studentIconWithNumber);
+
+                // Bitiş noktasına (eve) olan mesafeyi ekle
+                totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, startLocation.lat, startLocation.lng);
+
+                // En kısa mesafeli rotayı güncelle
+                if (totalDistance < shortestDistance) {
+                    shortestDistance = totalDistance;
+                    bestRoute = permutation;
+                }
             });
+
+            // En kısa rotayı hesapla ve çizelim
+            let allLocations = [endLocation, ...bestRoute, startLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
+            await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
         }
 
         // Serbest rota yolculuğu fonksiyonu
@@ -446,90 +508,6 @@
             updateStudentNumbers(bestRoute);
         }
 
-        // Dönüş yolculuğu fonksiyonu
-        async function showAllRotateBack() {
-            if (!startLocation || studentLocations.length === 0 || !endLocation) {
-                alert("Lütfen başlangıç noktası olan okulu seçiniz !!!")
-                return;
-            }
-
-            let bestRoute = null;
-            let shortestDistance = Infinity;
-
-            // Brut force yöntemi ile tüm permütasyonları elde edelim
-            const allPermutations = getPermutations(studentLocations);
-
-            // Tüm rotaları değerlendirelim
-            allPermutations.forEach(permutation => {
-                let totalDistance = 0;
-                let currentLocation = endLocation;
-
-                // Her permütasyon için toplam mesafeyi hesapla
-                permutation.forEach(student => {
-                    totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, student.lat, student.lng);
-                    currentLocation = student;
-                });
-
-                // Bitiş noktasına (eve) olan mesafeyi ekle
-                totalDistance += calculateDistance(currentLocation.lat, currentLocation.lng, startLocation.lat, startLocation.lng);
-
-                // En kısa mesafeli rotayı güncelle
-                if (totalDistance < shortestDistance) {
-                    shortestDistance = totalDistance;
-                    bestRoute = permutation;
-                }
-            });
-
-            // En kısa rotayı hesapla ve çizelim
-            let allLocations = [endLocation, ...bestRoute, startLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
-            await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
-
-            // Öğrenci numaralarını güncelleyelim
-            updateStudentNumbers(bestRoute);
-        }
-
-        async function calculateRouteAll(locations) {
-            const points = locations.map(loc => `${loc.lat},${loc.lng}`).join('&point=');
-            const url = `https://graphhopper.com/api/1/route?point=${points}&vehicle=car&locale=tr&points_encoded=false&key=${apiKey}`;
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const route = data.paths[0].points.coordinates;
-                const timeInMillis = data.paths[0].time; // milisaniye cinsinden süre
-                const timeInMinutes = (timeInMillis / 1000 / 60).toFixed(2); // dakika cinsinden
-                
-                // Rota çizimini güncelle
-                const coordinates = route.map(point => [point[1], point[0]]);
-                if (routePolyline) {
-                    map.removeLayer(routePolyline); // Eski rotayı kaldır
-                }
-                routePolyline = L.polyline(coordinates, { color: 'red' }).addTo(map);
-
-                // Turn-by-turn directions
-                const instructions = data.paths[0].instructions;
-                let directionsHtml = '<h3>Yol Tarifi</h3><ol>';
-                instructions.forEach(instr => {
-                    const iconHtml = `<img src="images/turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
-                    directionsHtml += `<li>${iconHtml}${instr.text}</li>`;
-                });
-                directionsHtml += '</ol>';
-                document.getElementById('directions').innerHTML = directionsHtml;
-
-                // Yolculuk süresi
-                let directionsHtml_time = '<h3>Yolculuk Süresi</h3>';
-                directionsHtml_time += `<p>Toplam süre: ${timeInMinutes} dakika</p>`;
-                document.getElementById('directions_time').innerHTML = directionsHtml_time;
-
-                // Harita güncelleme
-                const lastLocation = locations[locations.length - 1];
-                map.setView([lastLocation.lat, lastLocation.lng], 14);
-
-            } catch (error) {
-                console.error('Rota hesaplanamadı:', error);
-            }
-        }
-
         async function calculateNextDestination() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
                 alert("Lütfen okul noktasını belirleyin !!!");
@@ -575,26 +553,6 @@
 
             // Son olarak, okula dönüş rotasını hesaplayalım
             await calculateRoute(currentLocation, endLocation);          
-        }
-
-        // Permütasyonları hesaplayan fonksiyon
-        function getPermutations(array) {
-            let results = [];
-
-            function permute(arr, memo = []) {
-                let cur;
-                for (let i = 0; i < arr.length; i++) {
-                    cur = arr.splice(i, 1);
-                    if (arr.length === 0) {
-                        results.push(memo.concat(cur));
-                    }
-                    permute(arr.slice(), memo.concat(cur));
-                    arr.splice(i, 0, cur[0]);
-                }
-                return results;
-            }
-
-            return permute(array);
         }
 
         // Dönüş yolculuğu fonksiyonu
@@ -714,11 +672,6 @@
             }
         }
 
-        // Bekleme fonksiyonu
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
         // Rota hesaplama fonksiyonu
         async function calculateRoute(start, destination) {
             const points = `${start.lat},${start.lng}&point=${destination.lat},${destination.lng}`;
@@ -748,9 +701,9 @@
                 directionsHtml += '</ol>';
                 document.getElementById('directions').innerHTML = directionsHtml;
 
-                // Yolculuk süresi
+                // İki nokta arasındaki zaman
                 let directionsHtml_time = '<h3>Yolculuk Süresi</h3>';
-                directionsHtml_time += `<p>İki nokta arası geçen süre: ${timeInMinutes} dakika</p>`;
+                directionsHtml_time += `<p>İki nokta arası geçen süre: <span style="font-size: 20px; font-weight: bold; color: black;">${timeInMinutes} dakika</span></p>`;
                 document.getElementById('directions_time').innerHTML = directionsHtml_time;
 
                 // Harita güncelleme
@@ -761,6 +714,63 @@
             }
             await sleep(2000);  // 2 saniye bekle
         }
+
+        async function calculateRouteAll(locations) {
+            const points = locations.map(loc => `${loc.lat},${loc.lng}`).join('&point=');
+            const url = `https://graphhopper.com/api/1/route?point=${points}&vehicle=car&locale=tr&points_encoded=false&key=${apiKey}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const route = data.paths[0].points.coordinates;
+                const timeInMillis = data.paths[0].time; // milisaniye cinsinden süre
+                const timeInMinutes = (timeInMillis / 1000 / 60).toFixed(2); // dakika cinsinden
+
+                // Toplam yolculuk süresini dakika olarak hesaplıyoruz
+                const totalTravelTime = parseFloat(timeInMinutes);
+
+                // Başlangıç saati için hesaplama (bitiş saatinden yolculuk süresini çıkartıyoruz)
+                const finishTime = new Date();
+                finishTime.setHours(8, 0, 0, 0); // Bitiş saati: 08:00
+                
+                // Başlangıç zamanını hesapla
+                const startTime = new Date(finishTime.getTime() - totalTravelTime * 60 * 1000);
+
+                const startHour = startTime.getHours().toString().padStart(2, '0');
+                const startMinute = startTime.getMinutes().toString().padStart(2, '0');
+
+                // Rota çizimini güncelle
+                const coordinates = route.map(point => [point[1], point[0]]);
+                if (routePolyline) {
+                    map.removeLayer(routePolyline); // Eski rotayı kaldır
+                }
+                routePolyline = L.polyline(coordinates, { color: 'red' }).addTo(map);
+
+                // Turn-by-turn directions
+                const instructions = data.paths[0].instructions;
+                let directionsHtml = '<h3>Yol Tarifi</h3><ol>';
+                instructions.forEach(instr => {
+                    const iconHtml = `<img src="images/turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
+                    directionsHtml += `<li>${iconHtml}${instr.text}</li>`;
+                });
+                directionsHtml += '</ol>';
+                document.getElementById('directions').innerHTML = directionsHtml;
+
+                // Yolculuk süresi ve başlangıç saati
+                let directionsHtml_time = '<h3>Yolculuk Süresi ve Başlangıç Zamanı</h3>';
+                directionsHtml_time += `<p>Toplam süre: <span style="font-size: 20px; font-weight: bold; color: black;">${timeInMinutes} dakika</span></p>`;
+                directionsHtml_time += `<p>Başlangıç saati: <span style="font-size: 20px; font-weight: bold; color: black;">${startHour}:${startMinute}</span></p>`;
+                document.getElementById('directions_time').innerHTML = directionsHtml_time;
+
+                // Harita güncelleme
+                const lastLocation = locations[locations.length - 1];
+                map.setView([lastLocation.lat, lastLocation.lng], 14);
+
+            } catch (error) {
+                console.error('Rota hesaplanamadı:', error);
+            }
+        }
+
 
         function calculateDistance(lat1, lng1, lat2, lng2) {
             const R = 6371; // km
@@ -776,6 +786,12 @@
         function toRad(degrees) {
             return degrees * (Math.PI / 180);
         }
+
+        // Bekleme fonksiyonu
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
     </script>
 </body>
 
