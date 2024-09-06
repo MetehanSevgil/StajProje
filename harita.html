@@ -562,6 +562,9 @@
                     bestRoute = permutation;
                 }
             });
+        
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
 
             // En kısa rotayı çizelim
             let currentLocation = startLocation;
@@ -571,10 +574,7 @@
             }
 
             // Son olarak, okula dönüş rotasını hesaplayalım
-            await calculateRoute(currentLocation, endLocation);
-
-            // Öğrenci numaralarını güncelleyelim
-            updateStudentNumbers(bestRoute);
+            await calculateRoute(currentLocation, endLocation);          
         }
 
         // Permütasyonları hesaplayan fonksiyon
@@ -631,6 +631,9 @@
                 }
             });
 
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
+
             // En kısa rotayı çizelim
             let currentLocation = endLocation;
             for (let i = 0; i < bestRoute.length; i++) {
@@ -639,10 +642,7 @@
             }
 
             // Son olarak, eve dönüş rotasını hesaplayalım
-            await calculateRoute(currentLocation, startLocation);
-
-            // Öğrenci numaralarını güncelleyelim
-            updateStudentNumbers(bestRoute);
+            await calculateRoute(currentLocation, startLocation);          
         }
 
         // Serbest rota için hesaplama fonksiyonu
@@ -688,6 +688,9 @@
                 }
             });
 
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
+
             // En kısa rotayı çizelim
             let currentLocation = startLocation;
             for (let i = 0; i < bestRoute.length; i++) {
@@ -709,9 +712,6 @@
             else if (endLocation) {
                 await calculateRoute(currentLocation, endLocation);
             }
-
-            // Öğrenci numaralarını güncelleyelim
-            updateStudentNumbers(bestRoute);
         }
 
         // Bekleme fonksiyonu
