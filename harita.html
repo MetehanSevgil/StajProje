@@ -32,6 +32,9 @@
         <div id="directions">
             <h3>Yol Tarifi</h3>
         </div>
+        <div id="directions_time">
+            <h3>Yolculuk Süresi</h3>
+        </div>
     </div>
     <div id="locationList">
         <h3>Eklenen Konumlar</h3>
@@ -40,7 +43,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const apiKey = 'e08c2355-fda9-45c5-87de-700ad2b1b12c'; // GraphHopper API anahtarı
+        const apiKey = 'cebbc794-ab85-46e6-a3a6-a3ee7a1783af'; // GraphHopper API anahtarı
         const map = L.map('map').setView([41.04054087961094, 28.850040545545284], 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -107,15 +110,15 @@
         });
 
         document.getElementById('setDeleteButton').addEventListener('click', () => {
-            if(endLocation){
+            if (endLocation) {
                 map.removeLayer(endLocation.marker);  // Okul konumunu kaldır     
                 endLocation = null;
                 alert('Okul noktası silindi !!!');
             }
-            else{
+            else {
                 alert("Okul noktası zaten silimiş !!!");
             }
-            
+
         });
 
         document.getElementById('setEndButton').addEventListener('click', () => {
@@ -224,33 +227,74 @@
             // Geocoding ile adresi al
             const address = await getAddress(lat, lng);
 
-            const newStudentMarker = L.marker([lat, lng], { icon: studentIcon })
+            // Başlangıçta bu da sıfır olsun
+            const studentNumber = 0;
+
+            const iconHtml = `
+                <div style="position: relative; text-align: center;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Student Icon" style="width: 30px; height: 30px;">
+                    <div id="student-number-${studentNumber}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+                                display: flex; align-items: center; justify-content: center; 
+                                font-weight: bold; color: black; font-size: 14px; padding: 2px;">
+                        ${studentNumber}
+                    </div>
+                </div>
+            `;
+
+            const studentIconWithNumber = L.divIcon({
+                html: iconHtml,
+                iconSize: [30, 30],
+                className: ''
+            });
+
+            // Yeni öğrenci marker'ını oluştur
+            const newStudentMarker = L.marker([lat, lng], { icon: studentIconWithNumber })
                 .addTo(map)
                 .bindPopup(`Yeni Öğrenci: ${address}`)
                 .openPopup();
 
-            const locationObject = { lat, lng, marker: newStudentMarker, address };
+            // Öğrenci nesnesini oluştur ve listeye ekle
+            const locationObject = { lat, lng, marker: newStudentMarker, address, studentNumber };
             studentLocations.push(locationObject);
 
+            // Öğrenci listesini güncelle
             const studentList = document.getElementById('studentList');
             const listItem = document.createElement('li');
-            listItem.textContent = `Yeni Öğrenci: ${address}`;
+            listItem.textContent = `Yeni Öğrenci ${studentNumber}: ${address}`;
             listItem.setAttribute('data-index', studentLocations.length - 1);
             listItem.addEventListener('click', () => highlightLocation(listItem, locationObject));
             studentList.appendChild(listItem);
         });
 
+
         async function addPredefinedStudentLocations() {
             for (const [index, loc] of predefinedStudentLocations.entries()) {
-                const studentNumber = index + 1;
+                const studentNumber = 0; // Başlangıçta sıfır olacak
                 const address = await getAddress(loc.lat, loc.lng);
 
-                const marker = L.marker([loc.lat, loc.lng], { icon: studentIcon })
+                const iconHtml = `
+                    <div style="position: relative; text-align: center;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Student Icon" style="width: 30px; height: 30px;">
+                        <div id="student-number-${index}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+                                    display: flex; align-items: center; justify-content: center; 
+                                    font-weight: bold; color: black; font-size: 14px;">
+                            ${studentNumber}
+                        </div>
+                    </div>
+                `;
+
+                const studentIconWithNumber = L.divIcon({
+                    html: iconHtml,
+                    iconSize: [30, 30],
+                    className: ''
+                });
+
+                const marker = L.marker([loc.lat, loc.lng], { icon: studentIconWithNumber })
                     .addTo(map)
                     .bindPopup(`Öğrenci: ${address}`)
                     .openPopup();
 
-                const locationObject = { lat: loc.lat, lng: loc.lng, marker, address };
+                const locationObject = { lat: loc.lat, lng: loc.lng, marker, address, index };
                 studentLocations.push(locationObject);
 
                 const studentList = document.getElementById('studentList');
@@ -304,6 +348,33 @@
             // En kısa rotayı hesapla ve çizelim
             let allLocations = [startLocation, ...bestRoute, endLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
             await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
+        }
+
+        function updateStudentNumbers(route) {
+            route.forEach((student, index) => {
+                // Öğrenci numarasını güncelle
+                const studentNumber = index + 1;
+                const marker = student.marker;
+                const iconHtml = `
+                    <div style="position: relative; text-align: center;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Student Icon" style="width: 30px; height: 30px;">
+                        <div id="student-number-${student.index}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+                                    display: flex; align-items: center; justify-content: center; 
+                                    font-weight: bold; color: black; font-size: 14px;">
+                            ${studentNumber}
+                        </div>
+                    </div>
+                `;
+                const studentIconWithNumber = L.divIcon({
+                    html: iconHtml,
+                    iconSize: [30, 30],
+                    className: ''
+                });
+                marker.setIcon(studentIconWithNumber);
+            });
         }
 
         // Serbest rota yolculuğu fonksiyonu
@@ -370,6 +441,9 @@
                 let allLocations = [startLocation, ...bestRoute]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
                 await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
             }
+
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
         }
 
         // Dönüş yolculuğu fonksiyonu
@@ -409,6 +483,9 @@
             // En kısa rotayı hesapla ve çizelim
             let allLocations = [endLocation, ...bestRoute, startLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
             await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
         }
 
         async function calculateRouteAll(locations) {
@@ -419,7 +496,10 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 const route = data.paths[0].points.coordinates;
-
+                const timeInMillis = data.paths[0].time; // milisaniye cinsinden süre
+                const timeInMinutes = (timeInMillis / 1000 / 60).toFixed(2); // dakika cinsinden
+                
+                // Rota çizimini güncelle
                 const coordinates = route.map(point => [point[1], point[0]]);
                 if (routePolyline) {
                     map.removeLayer(routePolyline); // Eski rotayı kaldır
@@ -428,13 +508,18 @@
 
                 // Turn-by-turn directions
                 const instructions = data.paths[0].instructions;
-                let directionsHtml = '<h3>Yol Tarifi:</h3><ol>';
+                let directionsHtml = '<h3>Yol Tarifi</h3><ol>';
                 instructions.forEach(instr => {
                     const iconHtml = `<img src="images/turn-right.png" class="instruction-icon" />`; // Simgeyi ekle
                     directionsHtml += `<li>${iconHtml}${instr.text}</li>`;
                 });
                 directionsHtml += '</ol>';
                 document.getElementById('directions').innerHTML = directionsHtml;
+
+                // Yolculuk süresi
+                let directionsHtml_time = '<h3>Yolculuk Süresi</h3>';
+                directionsHtml_time += `<p>Toplam süre: ${timeInMinutes} dakika</p>`;
+                document.getElementById('directions_time').innerHTML = directionsHtml_time;
 
                 // Harita güncelleme
                 const lastLocation = locations[locations.length - 1];
@@ -487,6 +572,9 @@
 
             // Son olarak, okula dönüş rotasını hesaplayalım
             await calculateRoute(currentLocation, endLocation);
+
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
         }
 
         // Permütasyonları hesaplayan fonksiyon
@@ -552,6 +640,9 @@
 
             // Son olarak, eve dönüş rotasını hesaplayalım
             await calculateRoute(currentLocation, startLocation);
+
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
         }
 
         // Serbest rota için hesaplama fonksiyonu
@@ -618,6 +709,9 @@
             else if (endLocation) {
                 await calculateRoute(currentLocation, endLocation);
             }
+
+            // Öğrenci numaralarını güncelleyelim
+            updateStudentNumbers(bestRoute);
         }
 
         // Bekleme fonksiyonu
@@ -634,7 +728,10 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 const route = data.paths[0].points.coordinates;
+                const timeInMillis = data.paths[0].time; // milisaniye cinsinden süre
+                const timeInMinutes = (timeInMillis / 1000 / 60).toFixed(2); // dakika cinsinden
 
+                // Rota çizimini güncelle
                 const coordinates = route.map(point => [point[1], point[0]]);
                 if (routePolyline) {
                     map.removeLayer(routePolyline); // Eski rotayı kaldır
@@ -650,6 +747,11 @@
                 });
                 directionsHtml += '</ol>';
                 document.getElementById('directions').innerHTML = directionsHtml;
+
+                // Yolculuk süresi
+                let directionsHtml_time = '<h3>Yolculuk Süresi</h3>';
+                directionsHtml_time += `<p>İki nokta arası geçen süre: ${timeInMinutes} dakika</p>`;
+                document.getElementById('directions_time').innerHTML = directionsHtml_time;
 
                 // Harita güncelleme
                 map.setView([destination.lat, destination.lng], 14);

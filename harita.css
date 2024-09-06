@@ -59,6 +59,17 @@ body, html {
     width: 85%;
 }
 
+/* Yol Süresi */
+#directions_time{
+    width: 15%;
+    padding: 10px;
+    box-sizing: border-box;
+    background: linear-gradient(to right, #20aa3e, #3b1fc5);/* Butonlardaki renk geçişine uygun gradient */
+    color: rgb(0, 0, 0);
+    border-left: 1px solid #ddd;
+    overflow-y: auto;
+}
+
 /* Yol tarifleri */
 #directions {
     width: 15%;
