@@ -724,17 +724,17 @@
                 const data = await response.json();
                 const route = data.paths[0].points.coordinates;
                 const timeInMillis = data.paths[0].time; // milisaniye cinsinden süre
-                const timeInMinutes = (timeInMillis / 1000 / 60).toFixed(2); // dakika cinsinden
+                const timeInMinutes = timeInMillis / 1000 / 60; // dakika cinsinden toplam süre
 
-                // Toplam yolculuk süresini dakika olarak hesaplıyoruz
-                const totalTravelTime = parseFloat(timeInMinutes);
+                // Toplam yolculuk süresini dakika olarak hesaplıyoruz ve yuvarlıyoruz
+                const roundedTime = Math.round(timeInMinutes);
 
                 // Başlangıç saati için hesaplama (bitiş saatinden yolculuk süresini çıkartıyoruz)
                 const finishTime = new Date();
                 finishTime.setHours(8, 0, 0, 0); // Bitiş saati: 08:00
                 
                 // Başlangıç zamanını hesapla
-                const startTime = new Date(finishTime.getTime() - totalTravelTime * 60 * 1000);
+                const startTime = new Date(finishTime.getTime() - roundedTime * 60 * 1000);
 
                 const startHour = startTime.getHours().toString().padStart(2, '0');
                 const startMinute = startTime.getMinutes().toString().padStart(2, '0');
@@ -758,7 +758,7 @@
 
                 // Yolculuk süresi ve başlangıç saati
                 let directionsHtml_time = '<h3>Yolculuk Süresi ve Başlangıç Zamanı</h3>';
-                directionsHtml_time += `<p>Toplam süre: <span style="font-size: 20px; font-weight: bold; color: black;">${timeInMinutes} dakika</span></p>`;
+                directionsHtml_time += `<p>Toplam süre: <span style="font-size: 20px; font-weight: bold; color: black;">${roundedTime} dakika</span></p>`;
                 directionsHtml_time += `<p>Başlangıç saati: <span style="font-size: 20px; font-weight: bold; color: black;">${startHour}:${startMinute}</span></p>`;
                 document.getElementById('directions_time').innerHTML = directionsHtml_time;
 
