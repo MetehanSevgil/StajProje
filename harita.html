@@ -23,6 +23,7 @@
                 <button id="setEndButton" type="button" class="toggle-btn2">Okul Noktasını Seç</button>
                 <button id="setDeleteButton" type="button" class="toggle-btn2">Okul Noktasını Kaldır</button>
                 <button id="setEndRelaxButton" type="button" class="toggle-btn2">Serbest Bitiş Noktası Seç</button>
+                <button id="setDeleteRelaxButton" type="button" class="toggle-btn2">Serbest Bitiş Noktasını Kaldır</button>
                 <button id="addStudentButton" type="button" class="toggle-btn2">Öğrenci Ekle</button>
             </div>
         </div>
@@ -33,7 +34,7 @@
             <h3>Yol Tarifi</h3>
         </div>
         <div id="directions_time">
-            <h3>Yolculuk Süresi</h3>
+            <h3>Yolculuk Süresi, Başlangıç Zamanı ve Mesafe</h3>
         </div>
     </div>
     <div id="locationList">
@@ -106,29 +107,41 @@
 
         document.getElementById('setStartButton').addEventListener('click', () => {
             selectionMode = "start";
-            alert('Yeni başlangıç noktasını seçin.');
+            alert('Yeni Başlangıç Noktasını Seçin.');
         });
 
         document.getElementById('setDeleteButton').addEventListener('click', () => {
             if (endLocation) {
                 map.removeLayer(endLocation.marker);  // Okul konumunu kaldır     
                 endLocation = null;
-                alert('Okul noktası silindi !!!');
+                alert('Okul Noktası Silindi !!!');
             }
             else {
-                alert("Okul noktası zaten silimiş !!!");
+                alert("Okul Noktası Zaten Silimiş !!!");
             }
 
         });
 
         document.getElementById('setEndButton').addEventListener('click', () => {
             selectionMode = "end";
-            alert('Lütfen bitiş noktasını seçin.');
+            alert('Lütfen Bitiş Noktasını Seçin.');
         });
 
         document.getElementById('setEndRelaxButton').addEventListener('click', () => {
             selectionMode = "relax";
-            alert('Lütfen serbest bitiş noktasını seçin.');
+            alert('Lütfen Serbest Bitiş Noktasını Seçin.');
+        });
+
+        document.getElementById('setDeleteRelaxButton').addEventListener('click', () => {
+            if (relaxLocation) {
+                map.removeLayer(relaxLocation.marker);  // Okul konumunu kaldır     
+                relaxLocation = null;
+                alert('Serbest Bitiş Noktası Silindi !!!');
+            }
+            else {
+                alert("Serbest Bitiş Noktası Zaten Silimiş !!!");
+            }
+
         });
 
         document.getElementById('calculateRouteButton').addEventListener('click', showAllRotateGo);
@@ -358,7 +371,7 @@
 
         async function showAllRotateGo() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
-                alert("Lütfen okul noktasını belirleyin !!!");
+                alert("Lütfen Okul Noktasını Belirleyin !!!");
                 return;
             }
 
@@ -391,7 +404,7 @@
 
             // En kısa rotayı hesapla ve çizelim
             let allLocations = [startLocation, ...bestRoute, endLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
-            await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+            await calculateRouteAll(allLocations, true); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
 
             // Öğrenci numaralarını güncelleyelim
             updateStudentNumbers(bestRoute);
@@ -400,7 +413,7 @@
         // Dönüş yolculuğu fonksiyonu
         async function showAllRotateBack() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
-                alert("Lütfen başlangıç noktası olan okulu seçiniz !!!")
+                alert("Lütfen Başlangıç Noktası Olan Okulu Seçiniz !!!")
                 return;
             }
 
@@ -433,7 +446,7 @@
 
             // En kısa rotayı hesapla ve çizelim
             let allLocations = [endLocation, ...bestRoute, startLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
-            await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+            await calculateRouteAll(allLocations, false); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
 
             // Öğrenci numaralarını güncelleyelim
             updateStudentNumbers(bestRoute);
@@ -442,7 +455,7 @@
         // Serbest rota yolculuğu fonksiyonu
         async function showAllRotateRelax() {
             if (!startLocation || studentLocations.length === 0) {
-                alert("Serbest rota son öğrencide, okulda veya istediğiniz bir noktada bitebilir !!!");
+                alert("Serbest Rota Son Öğrencide, Okulda Veya İstediğiniz Bir Noktada Bitebilir !!!");
                 return;
             }
 
@@ -486,22 +499,22 @@
             if (relaxLocation && endLocation) {
                 // En kısa rotayı hesapla ve çizelim
                 let allLocations = [startLocation, ...bestRoute, endLocation, relaxLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
-                await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+                await calculateRouteAll(allLocations, true); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
             }
             // Eğer sadece serbest bitiş konumu varsa
             else if (relaxLocation) {
                 let allLocations = [startLocation, ...bestRoute, relaxLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
-                await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+                await calculateRouteAll(allLocations, true); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
             }
             // Eğer sadece bitiş konumu varsa
             else if (endLocation) {
                 let allLocations = [startLocation, ...bestRoute, endLocation]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
-                await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+                await calculateRouteAll(allLocations, true); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
             }
             // Eğer sadece başlangıç ve öğrenci konumları varsa
             else {
                 let allLocations = [startLocation, ...bestRoute]; // Başlangıç, öğrenci ve bitiş noktalarını içeren dizi
-                await calculateRouteAll(allLocations); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
+                await calculateRouteAll(allLocations, true); // Tüm rotayı bir seferde hesaplayıp çiziyoruz
             }
 
             // Öğrenci numaralarını güncelleyelim
@@ -510,7 +523,7 @@
 
         async function calculateNextDestination() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
-                alert("Lütfen okul noktasını belirleyin !!!");
+                alert("Lütfen Okul Noktasını Belirleyin !!!");
                 return;
             }
 
@@ -558,7 +571,7 @@
         // Dönüş yolculuğu fonksiyonu
         async function calculateNextDestinationBack() {
             if (!startLocation || studentLocations.length === 0 || !endLocation) {
-                alert("Lütfen başlangıç noktası olan okulu seçiniz !!!")
+                alert("Lütfen Başlangıç Noktası Olan Okulu Seçiniz !!!")
                 return;
             }
 
@@ -606,7 +619,7 @@
         // Serbest rota için hesaplama fonksiyonu
         async function calculateNextDestinationRelax() {
             if (!startLocation || studentLocations.length === 0) {
-                alert("Serbest rota son öğrencide, okulda veya istediğiniz bir noktada bitebilir !!!");
+                alert("Serbest Rota Son Öğrencide, Okulda Veya İstediğiniz Bir Noktada Bitebilir !!!");
                 return;
             }
 
@@ -683,6 +696,8 @@
                 const route = data.paths[0].points.coordinates;
                 const timeInMillis = data.paths[0].time; // milisaniye cinsinden süre
                 const timeInMinutes = (timeInMillis / 1000 / 60).toFixed(2); // dakika cinsinden
+                const distanceInMeters = data.paths[0].distance; // metre cinsinden mesafe
+                const distanceInKilometers = (distanceInMeters / 1000).toFixed(2); // kilometre cinsinden mesafe
 
                 // Rota çizimini güncelle
                 const coordinates = route.map(point => [point[1], point[0]]);
@@ -701,9 +716,10 @@
                 directionsHtml += '</ol>';
                 document.getElementById('directions').innerHTML = directionsHtml;
 
-                // İki nokta arasındaki zaman
-                let directionsHtml_time = '<h3>Yolculuk Süresi</h3>';
+                // İki nokta arasındaki zaman ve mesafe
+                let directionsHtml_time = '<h3>Yolculuk Süresi ve Mesafe</h3>';
                 directionsHtml_time += `<p>İki nokta arası geçen süre: <span style="font-size: 20px; font-weight: bold; color: black;">${timeInMinutes} dakika</span></p>`;
+                directionsHtml_time += `<p>İki nokta arası mesafe: <span style="font-size: 20px; font-weight: bold; color: black;">${distanceInKilometers} km</span></p>`;
                 document.getElementById('directions_time').innerHTML = directionsHtml_time;
 
                 // Harita güncelleme
@@ -715,7 +731,7 @@
             await sleep(2000);  // 2 saniye bekle
         }
 
-        async function calculateRouteAll(locations) {
+        async function calculateRouteAll(locations, is_go) {
             const points = locations.map(loc => `${loc.lat},${loc.lng}`).join('&point=');
             const url = `https://graphhopper.com/api/1/route?point=${points}&vehicle=car&locale=tr&points_encoded=false&key=${apiKey}`;
 
@@ -725,19 +741,36 @@
                 const route = data.paths[0].points.coordinates;
                 const timeInMillis = data.paths[0].time; // milisaniye cinsinden süre
                 const timeInMinutes = timeInMillis / 1000 / 60; // dakika cinsinden toplam süre
+                const distanceInMeters = data.paths[0].distance; // metre cinsinden toplam mesafe
 
                 // Toplam yolculuk süresini dakika olarak hesaplıyoruz ve yuvarlıyoruz
                 const roundedTime = Math.round(timeInMinutes);
 
-                // Başlangıç saati için hesaplama (bitiş saatinden yolculuk süresini çıkartıyoruz)
-                const finishTime = new Date();
-                finishTime.setHours(8, 0, 0, 0); // Bitiş saati: 08:00
-                
-                // Başlangıç zamanını hesapla
-                const startTime = new Date(finishTime.getTime() - roundedTime * 60 * 1000);
+                // Toplam mesafeyi kilometreye dönüştür
+                const distanceInKilometers = distanceInMeters / 1000;
+
+                let startTime, finishTime;
+                if (is_go) {
+                    // Okula gidiş: Başlangıç saati: 08:00
+                    finishTime = new Date();
+                    finishTime.setHours(8, 0, 0, 0); // Bitiş saati: 08:00
+                    
+                    // Başlangıç zamanını hesapla
+                    startTime = new Date(finishTime.getTime() - roundedTime * 60 * 1000);
+                } else {
+                    // Okuldan dönüş: Başlangıç saati: 15:00
+                    startTime = new Date();
+                    startTime.setHours(15, 0, 0, 0); // Başlangıç saati: 15:00
+                    
+                    // Bitiş zamanını hesapla
+                    finishTime = new Date(startTime.getTime() + roundedTime * 60 * 1000);
+                }
 
                 const startHour = startTime.getHours().toString().padStart(2, '0');
                 const startMinute = startTime.getMinutes().toString().padStart(2, '0');
+                
+                const finishHour = finishTime.getHours().toString().padStart(2, '0');
+                const finishMinute = finishTime.getMinutes().toString().padStart(2, '0');
 
                 // Rota çizimini güncelle
                 const coordinates = route.map(point => [point[1], point[0]]);
@@ -756,10 +789,12 @@
                 directionsHtml += '</ol>';
                 document.getElementById('directions').innerHTML = directionsHtml;
 
-                // Yolculuk süresi ve başlangıç saati
-                let directionsHtml_time = '<h3>Yolculuk Süresi ve Başlangıç Zamanı</h3>';
-                directionsHtml_time += `<p>Toplam süre: <span style="font-size: 20px; font-weight: bold; color: black;">${roundedTime} dakika</span></p>`;
+                // Yolculuk süresi ve başlangıç/bitiş saati
+                let directionsHtml_time = '<h3>Yolculuk Süresi, Başlangıç Zamanı ve Mesafe</h3>';
                 directionsHtml_time += `<p>Başlangıç saati: <span style="font-size: 20px; font-weight: bold; color: black;">${startHour}:${startMinute}</span></p>`;
+                directionsHtml_time += `<p>Toplam süre: <span style="font-size: 20px; font-weight: bold; color: black;">${roundedTime} dakika</span></p>`;
+                directionsHtml_time += `<p>Bitiş saati: <span style="font-size: 20px; font-weight: bold; color: black;">${finishHour}:${finishMinute}</span></p>`;
+                directionsHtml_time += `<p>Toplam mesafe: <span style="font-size: 20px; font-weight: bold; color: black;">${distanceInKilometers.toFixed(2)} km</span></p>`;
                 document.getElementById('directions_time').innerHTML = directionsHtml_time;
 
                 // Harita güncelleme
@@ -770,7 +805,6 @@
                 console.error('Rota hesaplanamadı:', error);
             }
         }
-
 
         function calculateDistance(lat1, lng1, lat2, lng2) {
             const R = 6371; // km
