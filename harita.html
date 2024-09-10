@@ -699,6 +699,9 @@
                 const distanceInMeters = data.paths[0].distance; // metre cinsinden mesafe
                 const distanceInKilometers = (distanceInMeters / 1000).toFixed(2); // kilometre cinsinden mesafe
 
+                // Toplam yolculuk süresini dakika olarak hesaplıyoruz ve yuvarlıyoruz
+                const roundedTime = Math.round(timeInMinutes);
+
                 // Rota çizimini güncelle
                 const coordinates = route.map(point => [point[1], point[0]]);
                 if (routePolyline) {
@@ -718,7 +721,7 @@
 
                 // İki nokta arasındaki zaman ve mesafe
                 let directionsHtml_time = '<h3>Yolculuk Süresi ve Mesafe</h3>';
-                directionsHtml_time += `<p>İki nokta arası geçen süre: <span style="font-size: 20px; font-weight: bold; color: black;">${timeInMinutes} dakika</span></p>`;
+                directionsHtml_time += `<p>İki nokta arası geçen süre: <span style="font-size: 20px; font-weight: bold; color: black;">${roundedTime} dakika</span></p>`;
                 directionsHtml_time += `<p>İki nokta arası mesafe: <span style="font-size: 20px; font-weight: bold; color: black;">${distanceInKilometers} km</span></p>`;
                 document.getElementById('directions_time').innerHTML = directionsHtml_time;
 
