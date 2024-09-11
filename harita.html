@@ -738,6 +738,8 @@
             const points = locations.map(loc => `${loc.lat},${loc.lng}`).join('&point=');
             const url = `https://graphhopper.com/api/1/route?point=${points}&vehicle=car&locale=tr&points_encoded=false&key=${apiKey}`;
 
+            const studentLocations = locations.slice(0, -1); // Son lokasyon okul olduğu için öğrencileri ayırıyoruz
+
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -754,20 +756,20 @@
 
                 let startTime, finishTime;
                 if (is_go) {
-                    // Okula gidiş: Başlangıç saati: 08:00
+                    // Okula varış saati sabit 08:00, bu yüzden finishTime 08:00 olarak ayarlanıyor
                     finishTime = new Date();
-                    finishTime.setHours(8, 0, 0, 0); // Bitiş saati: 08:00
-                    
-                    // Başlangıç zamanını hesapla
+                    finishTime.setHours(8, 0, 0, 0); 
+                    // Başlangıç saati, toplam rota süresini varış saatinden çıkararak hesaplanır
                     startTime = new Date(finishTime.getTime() - roundedTime * 60 * 1000);
                 } else {
-                    // Okuldan dönüş: Başlangıç saati: 15:00
+                    // Okuldan dönüşte sabit başlangıç saati 15:00
                     startTime = new Date();
-                    startTime.setHours(15, 0, 0, 0); // Başlangıç saati: 15:00
-                    
-                    // Bitiş zamanını hesapla
+                    startTime.setHours(15, 0, 0, 0);
+                    // Bitiş saati, rota süresini ekleyerek hesaplanır
                     finishTime = new Date(startTime.getTime() + roundedTime * 60 * 1000);
                 }
+                
+                let currentTime = startTime;
 
                 const startHour = startTime.getHours().toString().padStart(2, '0');
                 const startMinute = startTime.getMinutes().toString().padStart(2, '0');
@@ -798,6 +800,23 @@
                 directionsHtml_time += `<p>Toplam süre: <span style="font-size: 20px; font-weight: bold; color: black;">${roundedTime} dakika</span></p>`;
                 directionsHtml_time += `<p>Bitiş saati: <span style="font-size: 20px; font-weight: bold; color: black;">${finishHour}:${finishMinute}</span></p>`;
                 directionsHtml_time += `<p>Toplam mesafe: <span style="font-size: 20px; font-weight: bold; color: black;">${distanceInKilometers.toFixed(2)} km</span></p>`;
+                document.getElementById('directions_time').innerHTML = directionsHtml_time;
+
+                for (let i = 0; i < studentLocations.length - 1; i++) {
+                    const pointA = locations[i];
+                    const pointB = locations[i + 1];
+                    
+                    // İki öğrenci arasındaki süreyi hesapla
+                    const distanceBetweenPoints = calculateDistance(pointA.lat, pointA.lng, pointB.lat, pointB.lng);
+                    const timeBetweenPoints = (distanceBetweenPoints / distanceInKilometers) * roundedTime * 1.4;  // 1.4 ortalama sapma
+                    currentTime = new Date(currentTime.getTime() + timeBetweenPoints * 60 * 1000); // Saat güncelleme
+                    
+                    const currentHour = currentTime.getHours().toString().padStart(2, '0');
+                    const currentMinute = currentTime.getMinutes().toString().padStart(2, '0');
+                    
+                    directionsHtml_time += `<p>Öğrenci ${i + 1} durağına varış saati: <span style="font-size: 20px; font-weight: bold; color: black;">${currentHour}:${currentMinute}</span></p>`;
+                }
+                
                 document.getElementById('directions_time').innerHTML = directionsHtml_time;
 
                 // Harita güncelleme
